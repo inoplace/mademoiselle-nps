@@ -4,19 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="robots" content="noindex">
-<title>마드모아젤 헤어 - 만족도 평가</title>
-<meta property="og:title" content="마드모아젤 헤어 - 만족도 평가">
+<title>마드모아젤 고객만족평가</title>
+<meta property="og:title" content="마드모아젤 고객만족평가">
 <meta property="og:description" content="고객님의 소중한 의견을 들려주세요">
 <meta property="og:url" content="https://inoplace.github.io/mademoiselle-nps/">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --brand: #c2607e;
-    --brand-dark: #a94e6b;
-    --brand-light: #fdf0f4;
-    --text: #333;
-    --muted: #888;
-    --border: #e5dede;
-    --star: #f5b301;
+    --brand: #b3906a;
+    --brand-dark: #94734d;
+    --brand-light: #f7f1e6;
+    --cream: #fffdf9;
+    --text: #3f372e;
+    --muted: #978b7a;
+    --border: #e7dfd2;
+    --star: #d4a94e;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
@@ -26,33 +28,47 @@
     color: var(--text);
     display: flex; justify-content: center;
   }
-  .app { width: 100%; max-width: 480px; min-height: 100dvh; display: flex; flex-direction: column; background: #fff; }
+  .app { width: 100%; max-width: 480px; min-height: 100dvh; display: flex; flex-direction: column; background: var(--cream); }
 
   /* 진행 바 */
-  .progress { height: 5px; background: #f0e6ea; }
+  .progress { height: 5px; background: #efe7d8; }
   .progress > div { height: 100%; width: 0; background: var(--brand); transition: width .3s; border-radius: 0 3px 3px 0; }
 
   .step { display: none; flex: 1; flex-direction: column; padding: 28px 22px 24px; }
   .step.active { display: flex; }
 
-  .q-title { font-size: 20px; font-weight: 700; line-height: 1.45; margin-bottom: 6px; word-break: keep-all; }
+  .q-title { font-family: 'Noto Serif KR', serif; font-size: 20px; font-weight: 700; line-height: 1.5; margin-bottom: 6px; word-break: keep-all; }
   .q-sub { font-size: 14px; color: var(--muted); line-height: 1.5; margin-bottom: 20px; word-break: keep-all; }
   .q-body { flex: 1; }
 
   /* 인트로 */
   .intro { text-align: center; padding-top: 36px; }
-  .intro .logo { font-size: 15px; letter-spacing: 3px; color: var(--brand); font-weight: 700; margin-bottom: 6px; }
-  .intro h1 { font-size: 24px; margin-bottom: 10px; word-break: keep-all; }
+  .intro .logo { font-family: 'Noto Serif KR', serif; font-size: 14px; letter-spacing: 5px; color: var(--brand); font-weight: 600; margin-bottom: 8px; }
+  .intro h1 { font-family: 'Noto Serif KR', serif; font-size: 25px; margin-bottom: 12px; word-break: keep-all; }
   .intro p { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 26px; word-break: keep-all; }
   .store-badge { display: none; margin: 0 auto 22px; padding: 8px 18px; background: var(--brand-light); color: var(--brand-dark); border-radius: 20px; font-size: 14px; font-weight: 700; width: fit-content; }
-  .self-check { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 22px; font-size: 15px; cursor: pointer; user-select: none; }
-  .self-check input { width: 20px; height: 20px; accent-color: var(--brand); }
+  .self-check {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: fit-content; margin: 0 auto 22px; padding: 13px 22px;
+    border: 1px solid var(--border); border-radius: 30px; background: #fff;
+    font-size: 15px; color: var(--text); cursor: pointer; user-select: none;
+    transition: all .2s; box-shadow: 0 1px 4px rgba(148, 115, 77, .06);
+  }
+  .self-check input { display: none; }
+  .self-check .mark {
+    width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    color: transparent; font-size: 13px; transition: all .2s; flex: none;
+  }
+  .self-check.on { border-color: var(--brand); background: var(--brand-light); }
+  .self-check.on .mark { background: var(--brand); color: #fff; }
 
   /* 선택 버튼 목록 */
   .opts { display: flex; flex-direction: column; gap: 10px; }
   .opt {
-    padding: 15px 16px; border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 15px 16px; border: 1px solid var(--border); border-radius: 12px;
     font-size: 16px; background: #fff; text-align: left; cursor: pointer; transition: all .15s;
+    box-shadow: 0 1px 3px rgba(148, 115, 77, .05);
   }
   .opt.sel { border-color: var(--brand); background: var(--brand-light); color: var(--brand-dark); font-weight: 700; }
 
@@ -109,19 +125,19 @@
   <section class="step active" data-step="intro">
     <div class="q-body intro">
       <div class="logo">MADEMOISELLE</div>
-      <h1>마드모아젤 헤어<br>만족도 평가</h1>
+      <h1>마드모아젤<br>고객만족평가</h1>
       <div class="store-badge" id="storeBadge"></div>
-      <p>저희 매장을 방문해주셔서 진심으로 감사드립니다 🙇<br>
-      칭찬하고 싶은 직원이나 불편했던 점을<br>가감 없이 말씀해주세요. (약 1분 소요)</p>
-      <label class="self-check"><input type="checkbox" id="selfCheck"> 본인이 직접 작성합니다</label>
-      <div class="err" id="errIntro">본인 확인에 체크해주세요.</div>
+      <p>저희 매장을 찾아주셔서 진심으로 감사드립니다 🙇<br>
+      칭찬하고 싶은 직원이나 아쉬우셨던 점을<br>편안하게 말씀해 주세요. (약 1분 소요)</p>
+      <label class="self-check" id="selfCheckBox"><input type="checkbox" id="selfCheck"><span class="mark">✓</span>본인이 직접 작성함을 확인합니다</label>
+      <div class="err" id="errIntro">본인 확인을 부탁드립니다.</div>
     </div>
     <div class="nav"><button class="btn btn-next" onclick="startSurvey()">설문 시작하기</button></div>
   </section>
 
   <!-- 1. 지점 -->
   <section class="step" data-step="store">
-    <div class="q-title">방문하신 지점을 선택해주세요.</div>
+    <div class="q-title">방문하신 지점을 선택해 주세요.</div>
     <div class="q-body"><div class="opts" id="storeOpts"></div></div>
     <div class="err" id="errStore">지점을 선택해주세요.</div>
     <div class="nav">
@@ -132,7 +148,7 @@
 
   <!-- 2. 디자이너 -->
   <section class="step" data-step="designer">
-    <div class="q-title">당일 시술을 담당한<br>디자이너 성함을 입력해주세요.</div>
+    <div class="q-title">당일 시술을 담당해 주신<br>디자이너 선생님의 성함을 알려주시겠어요?</div>
     <div class="q-sub">예: 김미소</div>
     <div class="q-body"><input type="text" id="designer" placeholder="디자이너 성함" maxlength="20"></div>
     <div class="err" id="errDesigner">디자이너 성함을 입력해주세요.</div>
@@ -144,7 +160,7 @@
 
   <!-- 3. 성별/나이 -->
   <section class="step" data-step="profile">
-    <div class="q-title">고객님에 대해 알려주세요.</div>
+    <div class="q-title">고객님에 대해 알려주시겠어요?</div>
     <div class="q-body">
       <div class="field"><label>성별</label>
         <div class="opts" style="flex-direction:row" id="genderOpts"></div>
@@ -162,8 +178,8 @@
 
   <!-- 4. 시술 만족도 -->
   <section class="step" data-step="score">
-    <div class="q-title">당일 받으신 시술과 서비스의<br>만족도는 어떠셨나요?</div>
-    <div class="q-sub">별을 눌러 선택해주세요. (5개 = 매우 만족)</div>
+    <div class="q-title">당일 받으신 시술과 서비스는<br>만족스러우셨나요?</div>
+    <div class="q-sub">별을 눌러 선택해 주세요. (5개 = 매우 만족)</div>
     <div class="q-body">
       <div class="stars" id="scoreStars"></div>
       <div class="star-label" id="scoreLabel"></div>
@@ -177,8 +193,8 @@
 
   <!-- 5. 청결도 -->
   <section class="step" data-step="clean">
-    <div class="q-title">당일 방문하신 매장이<br>청결했나요?</div>
-    <div class="q-sub">별을 눌러 선택해주세요. (5개 = 매우 청결)</div>
+    <div class="q-title">방문하신 매장은<br>청결하고 쾌적하셨나요?</div>
+    <div class="q-sub">별을 눌러 선택해 주세요. (5개 = 매우 청결)</div>
     <div class="q-body">
       <div class="stars" id="cleanStars"></div>
       <div class="star-label" id="cleanLabel"></div>
@@ -192,12 +208,12 @@
 
   <!-- 6. 응대 친절도 (+불친절 사유) -->
   <section class="step" data-step="kindness">
-    <div class="q-title">직원의 응대는 친절했나요?</div>
+    <div class="q-title">저희 직원의 응대는 어떠셨나요?</div>
     <div class="q-body">
       <div class="opts" id="kindOpts"></div>
       <div class="unkind-box" id="unkindBox">
-        <div class="field"><label>어떤 점이 불편하셨는지 알려주시면 꼭 개선하겠습니다.</label>
-          <textarea id="unkindComment" placeholder="불편했던 점을 적어주세요." maxlength="500"></textarea>
+        <div class="field"><label>불편을 드려 죄송합니다. 말씀해 주시면 꼭 개선하겠습니다.</label>
+          <textarea id="unkindComment" placeholder="불편하셨던 점을 편하게 남겨주세요." maxlength="500"></textarea>
         </div>
       </div>
     </div>
@@ -210,7 +226,7 @@
 
   <!-- 7. 재방문 -->
   <section class="step" data-step="revisit">
-    <div class="q-title">재방문 의사가 있으신가요?</div>
+    <div class="q-title">다음에도 저희 매장을<br>찾아주실 의향이 있으신가요?</div>
     <div class="q-body"><div class="opts" id="revisitOpts"></div></div>
     <div class="err" id="errRevisit">항목을 선택해주세요.</div>
     <div class="nav">
@@ -221,9 +237,9 @@
 
   <!-- 8. 자유 의견 -->
   <section class="step" data-step="comment">
-    <div class="q-title">개선했으면 하는 점이나<br>좋았던 점을 자유롭게 적어주세요.</div>
-    <div class="q-sub">선택 사항입니다. 없으시면 바로 다음을 눌러주세요.</div>
-    <div class="q-body"><textarea id="generalComment" placeholder="자유롭게 작성해주세요." maxlength="1000"></textarea></div>
+    <div class="q-title">개선했으면 하는 점이나<br>좋았던 점을 자유롭게 남겨주세요.</div>
+    <div class="q-sub">선택 사항입니다. 없으시면 다음으로 넘어가셔도 됩니다.</div>
+    <div class="q-body"><textarea id="generalComment" placeholder="고객님의 의견 하나하나가 큰 힘이 됩니다." maxlength="1000"></textarea></div>
     <div class="nav">
       <button class="btn btn-prev" onclick="prev()">이전</button>
       <button class="btn btn-next" onclick="next()">다음</button>
@@ -232,8 +248,8 @@
 
   <!-- 9. 연락처 + 제출 -->
   <section class="step" data-step="contact">
-    <div class="q-title">성함과 연락처를 남겨주세요.</div>
-    <div class="q-sub">응답 확인 및 서비스 개선 안내 목적으로만 사용됩니다.</div>
+    <div class="q-title">성함과 연락처를 남겨주시겠어요?</div>
+    <div class="q-sub">응답 확인 및 서비스 개선 안내 목적으로만 소중히 사용됩니다.</div>
     <div class="q-body">
       <div class="field"><label>성함</label><input type="text" id="visitorName" placeholder="예: 홍길동" maxlength="20"></div>
       <div class="field"><label>연락처</label><input type="tel" id="visitorPhone" placeholder="예: 010-1234-5678" maxlength="13"></div>
@@ -256,7 +272,7 @@
     <div class="q-body done">
       <div class="emoji">🙇‍♀️</div>
       <h2>제출이 완료되었습니다!</h2>
-      <p>소중한 의견 감사합니다 💕<br><span class="brand">Mademoiselle Hair</span><br>더 나은 서비스로 보답하겠습니다.</p>
+      <p>소중한 의견 진심으로 감사드립니다 💕<br><span class="brand">Mademoiselle</span><br>더 나은 서비스로 보답하겠습니다.</p>
     </div>
   </section>
 </div>
@@ -270,10 +286,11 @@
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbymBMZOwzRBfOFffXoeoO_K11gcRdrr47vif73L0UCu3O9lEXpm8BY__zc3RzTjGGVe/exec';
 
 const STORES = {
-  ns1: '나성 1호점',
-  ns2: '나성 2호점',
-  bg:  '반곡점',
-  mw:  '마크원 에비뉴점'
+  ns1:  '나성 1호점',
+  ns2:  '나성 2호점',
+  bg:   '반곡점',
+  mw:   '마크원 에비뉴점',
+  nail: '마드모아젤 네일'
 };
 /* ══════════════════════════════════════════════════════════════ */
 
@@ -393,6 +410,11 @@ function renderStars(boxId, labelId, key) {
 }
 renderStars('scoreStars', 'scoreLabel', 'serviceSatisfaction');
 renderStars('cleanStars', 'cleanLabel', 'cleanSatisfaction');
+
+// 본인 확인 체크 스타일 토글
+document.getElementById('selfCheck').addEventListener('change', function () {
+  document.getElementById('selfCheckBox').classList.toggle('on', this.checked);
+});
 
 // 연락처 자동 하이픈
 document.getElementById('visitorPhone').addEventListener('input', function () {
