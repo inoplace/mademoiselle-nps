@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex">
+<title>마드모아젤 헤어 - 만족도 평가</title>
+<meta property="og:title" content="마드모아젤 헤어 - 만족도 평가">
+<meta property="og:description" content="고객님의 소중한 의견을 들려주세요">
+<meta property="og:url" content="https://inoplace.github.io/mademoiselle-nps/">
+<style>
+  :root {
+    --brand: #c2607e;
+    --brand-dark: #a94e6b;
+    --brand-light: #fdf0f4;
+    --text: #333;
+    --muted: #888;
+    --border: #e5dede;
+    --star: #f5b301;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+    background: var(--brand-light);
+    color: var(--text);
+    display: flex; justify-content: center;
+  }
+  .app { width: 100%; max-width: 480px; min-height: 100dvh; display: flex; flex-direction: column; background: #fff; }
+
+  /* 진행 바 */
+  .progress { height: 5px; background: #f0e6ea; }
+  .progress > div { height: 100%; width: 0; background: var(--brand); transition: width .3s; border-radius: 0 3px 3px 0; }
+
+  .step { display: none; flex: 1; flex-direction: column; padding: 28px 22px 24px; }
+  .step.active { display: flex; }
+
+  .q-title { font-size: 20px; font-weight: 700; line-height: 1.45; margin-bottom: 6px; word-break: keep-all; }
+  .q-sub { font-size: 14px; color: var(--muted); line-height: 1.5; margin-bottom: 20px; word-break: keep-all; }
+  .q-body { flex: 1; }
+
+  /* 인트로 */
+  .intro { text-align: center; padding-top: 36px; }
+  .intro .logo { font-size: 15px; letter-spacing: 3px; color: var(--brand); font-weight: 700; margin-bottom: 6px; }
+  .intro h1 { font-size: 24px; margin-bottom: 10px; word-break: keep-all; }
+  .intro p { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 26px; word-break: keep-all; }
+  .store-badge { display: none; margin: 0 auto 22px; padding: 8px 18px; background: var(--brand-light); color: var(--brand-dark); border-radius: 20px; font-size: 14px; font-weight: 700; width: fit-content; }
+  .self-check { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 22px; font-size: 15px; cursor: pointer; user-select: none; }
+  .self-check input { width: 20px; height: 20px; accent-color: var(--brand); }
+
+  /* 선택 버튼 목록 */
+  .opts { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    padding: 15px 16px; border: 1.5px solid var(--border); border-radius: 12px;
+    font-size: 16px; background: #fff; text-align: left; cursor: pointer; transition: all .15s;
+  }
+  .opt.sel { border-color: var(--brand); background: var(--brand-light); color: var(--brand-dark); font-weight: 700; }
+
+  /* 별점 */
+  .stars { display: flex; justify-content: center; gap: 6px; padding: 18px 0 6px; }
+  .stars button { font-size: 46px; background: none; border: none; color: #ddd; cursor: pointer; transition: transform .1s, color .15s; line-height: 1; padding: 4px; }
+  .stars button.on { color: var(--star); }
+  .stars button:active { transform: scale(1.2); }
+  .star-label { text-align: center; font-size: 15px; color: var(--brand-dark); font-weight: 700; min-height: 22px; margin-bottom: 8px; }
+
+  /* 입력 */
+  input[type=text], input[type=tel], textarea {
+    width: 100%; padding: 14px; border: 1.5px solid var(--border); border-radius: 12px;
+    font-size: 16px; font-family: inherit; background: #fff;
+  }
+  input:focus, textarea:focus { outline: none; border-color: var(--brand); }
+  textarea { min-height: 120px; resize: vertical; }
+  .field + .field { margin-top: 12px; }
+  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+
+  .unkind-box { display: none; margin-top: 16px; }
+  .unkind-box.show { display: block; }
+
+  /* 하단 버튼 */
+  .nav { display: flex; gap: 10px; margin-top: 24px; }
+  .btn {
+    flex: 1; padding: 16px; border: none; border-radius: 12px; font-size: 17px; font-weight: 700;
+    cursor: pointer; font-family: inherit; transition: opacity .15s;
+  }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .btn-next { background: var(--brand); color: #fff; }
+  .btn-next:not(:disabled):active { background: var(--brand-dark); }
+  .btn-prev { flex: 0 0 90px; background: #f1eaed; color: #7a6a70; }
+  .err { color: #d33; font-size: 13px; margin-top: 10px; display: none; }
+  .err.show { display: block; }
+
+  /* 완료 */
+  .done { text-align: center; padding-top: 60px; }
+  .done .emoji { font-size: 54px; margin-bottom: 18px; }
+  .done h2 { font-size: 22px; margin-bottom: 12px; }
+  .done p { font-size: 15px; color: var(--muted); line-height: 1.8; word-break: keep-all; }
+  .done .brand { color: var(--brand); font-weight: 700; }
+
+  .sending { text-align: center; padding-top: 80px; color: var(--muted); font-size: 15px; }
+  .spinner { width: 36px; height: 36px; border: 4px solid #f0e0e6; border-top-color: var(--brand); border-radius: 50%; margin: 0 auto 16px; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="progress"><div id="bar"></div></div>
+
+  <!-- 0. 인트로 -->
+  <section class="step active" data-step="intro">
+    <div class="q-body intro">
+      <div class="logo">MADEMOISELLE</div>
+      <h1>마드모아젤 헤어<br>만족도 평가</h1>
+      <div class="store-badge" id="storeBadge"></div>
+      <p>저희 매장을 방문해주셔서 진심으로 감사드립니다 🙇<br>
+      칭찬하고 싶은 직원이나 불편했던 점을<br>가감 없이 말씀해주세요. (약 1분 소요)</p>
+      <label class="self-check"><input type="checkbox" id="selfCheck"> 본인이 직접 작성합니다</label>
+      <div class="err" id="errIntro">본인 확인에 체크해주세요.</div>
+    </div>
+    <div class="nav"><button class="btn btn-next" onclick="startSurvey()">설문 시작하기</button></div>
+  </section>
+
+  <!-- 1. 지점 -->
+  <section class="step" data-step="store">
+    <div class="q-title">방문하신 지점을 선택해주세요.</div>
+    <div class="q-body"><div class="opts" id="storeOpts"></div></div>
+    <div class="err" id="errStore">지점을 선택해주세요.</div>
+    <div class="nav">
+      <button class="btn btn-prev" onclick="prev()">이전</button>
+      <button class="btn btn-next" onclick="next()">다음</button>
+    </div>
+  </section>
+
+  <!-- 2. 디자이너 -->
+  <section class="step" data-step="designer">
+    <div class="q-title">당일 시술을 담당한<br>디자이너 성함을 입력해주세요.</div>
+    <div class="q-sub">예: 김미소</div>
+    <div class="q-body"><input type="text" id="designer" placeholder="디자이너 성함" maxlength="20"></div>
+    <div class="err" id="errDesigner">디자이너 성함을 입력해주세요.</div>
+    <div class="nav">
+      <button class="btn btn-prev" onclick="prev()">이전</button>
+      <button class="btn btn-next" onclick="next()">다음</button>
+    </div>
+  </section>
+
+  <!-- 3. 성별/나이 -->
+  <section class="step" data-step="profile">
+    <div class="q-title">고객님에 대해 알려주세요.</div>
+    <div class="q-body">
+      <div class="field"><label>성별</label>
+        <div class="opts" style="flex-direction:row" id="genderOpts"></div>
+      </div>
+      <div class="field"><label>연령대</label>
+        <div class="opts" id="ageOpts"></div>
+      </div>
+    </div>
+    <div class="err" id="errProfile">성별과 연령대를 선택해주세요.</div>
+    <div class="nav">
+      <button class="btn btn-prev" onclick="prev()">이전</button>
+      <button class="btn btn-next" onclick="next()">다음</button>
+    </div>
+  </section>
+
+  <!-- 4. 시술 만족도 -->
+  <section class="step" data-step="score">
+    <div class="q-title">당일 받으신 시술과 서비스의<br>만족도는 어떠셨나요?</div>
+    <div class="q-sub">별을 눌러 선택해주세요. (5개 = 매우 만족)</div>
+    <div class="q-body">
+      <div class="stars" id="scoreStars"></div>
+      <div class="star-label" id="scoreLabel"></div>
+    </div>
+    <div class="err" id="errScore">별점을 선택해주세요.</div>
+    <div class="nav">
+      <button class="btn btn-prev" onclick="prev()">이전</button>
+      <button class="btn btn-next" onclick="next()">다음</button>
+    </div>
+  </section>
+
+  <!-- 5. 청결도 -->
+  <section class="step" data-step="clean">
+    <div class="q-title">당일 방문하신 매장이<br>청결했나요?</div>
+    <div class="q-sub">별을 눌러 선택해주세요. (5개 = 매우 청결)</div>
+    <div class="q-body">
+      <div class="stars" id="cleanStars"></div>
+      <div class="star-label" id="cleanLabel"></div>
+    </div>
+    <div class="err" id="errClean">별점을 선택해주세요.</div>
+    <div class="nav">
+      <button class="btn btn-prev" onclick="prev()">이전</button>
+      <button class="btn btn-next" onclick="next()">다음</button>
+    </div>
+  </section>
+
+  <!-- 6. 응대 친절도 (+불친절 사유) -->
+  <section class="step" data-step="kindness">
+    <div class="q-title">직원의 응대는 친절했나요?</div>
+    <div class="q-body">
+      <div class="opts" id="kindOpts"></div>
+      <div class="unkind-box" id="unkindBox">
+        <div class="field"><label>어떤 점이 불편하셨는지 알려주시면 꼭 개선하겠습니다.</label>
+          <textarea id="unkindComment" placeholder="불편했던 점을 적어주세요." maxlength="500"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="err" id="errKind">항목을 선택해주세요.</div>
+    <div class="nav">
+      <button class="btn btn-prev" onclick="prev()">이전</button>
+      <button class="btn btn-next" onclick="next()">다음</button>
+    </div>
+  </section>
+
+  <!-- 7. 재방문 -->
+  <section class="step" data-step="revisit">
+    <div class="q-title">재방문 의사가 있으신가요?</div>
+    <div class="q-body"><div class="opts" id="revisitOpts"></div></div>
+    <div class="err" id="errRevisit">항목을 선택해주세요.</div>
+    <div class="nav">
+      <button class="btn btn-prev" onclick="prev()">이전</button>
+      <button class="btn btn-next" onclick="next()">다음</button>
+    </div>
+  </section>
+
+  <!-- 8. 자유 의견 -->
+  <section class="step" data-step="comment">
+    <div class="q-title">개선했으면 하는 점이나<br>좋았던 점을 자유롭게 적어주세요.</div>
+    <div class="q-sub">선택 사항입니다. 없으시면 바로 다음을 눌러주세요.</div>
+    <div class="q-body"><textarea id="generalComment" placeholder="자유롭게 작성해주세요." maxlength="1000"></textarea></div>
+    <div class="nav">
+      <button class="btn btn-prev" onclick="prev()">이전</button>
+      <button class="btn btn-next" onclick="next()">다음</button>
+    </div>
+  </section>
+
+  <!-- 9. 연락처 + 제출 -->
+  <section class="step" data-step="contact">
+    <div class="q-title">성함과 연락처를 남겨주세요.</div>
+    <div class="q-sub">응답 확인 및 서비스 개선 안내 목적으로만 사용됩니다.</div>
+    <div class="q-body">
+      <div class="field"><label>성함</label><input type="text" id="visitorName" placeholder="예: 홍길동" maxlength="20"></div>
+      <div class="field"><label>연락처</label><input type="tel" id="visitorPhone" placeholder="예: 010-1234-5678" maxlength="13"></div>
+    </div>
+    <div class="err" id="errContact">성함과 연락처를 입력해주세요.</div>
+    <div class="err" id="errSubmit">전송에 실패했습니다. 네트워크 확인 후 다시 시도해주세요.</div>
+    <div class="nav">
+      <button class="btn btn-prev" onclick="prev()">이전</button>
+      <button class="btn btn-next" id="submitBtn" onclick="submitSurvey()">제출 완료</button>
+    </div>
+  </section>
+
+  <!-- 전송 중 -->
+  <section class="step" data-step="sending">
+    <div class="sending"><div class="spinner"></div>소중한 의견을 전송하고 있습니다...</div>
+  </section>
+
+  <!-- 완료 -->
+  <section class="step" data-step="done">
+    <div class="q-body done">
+      <div class="emoji">🙇‍♀️</div>
+      <h2>제출이 완료되었습니다!</h2>
+      <p>소중한 의견 감사합니다 💕<br><span class="brand">Mademoiselle Hair</span><br>더 나은 서비스로 보답하겠습니다.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   설정 — 대표님이 수정할 부분은 여기뿐입니다.
+   1) WEBHOOK_URL : Apps Script 웹앱 배포 URL 붙여넣기
+   2) STORES     : 지점 추가/삭제 시 수정 (코드: 지점명)
+   ══════════════════════════════════════════════════════════════ */
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbymBMZOwzRBfOFffXoeoO_K11gcRdrr47vif73L0UCu3O9lEXpm8BY__zc3RzTjGGVe/exec';
+
+const STORES = {
+  ns1: '나성 1호점',
+  ns2: '나성 2호점',
+  bg:  '반곡점',
+  mw:  '마크원 에비뉴점'
+};
+/* ══════════════════════════════════════════════════════════════ */
+
+const GENDERS = ['남자', '여자'];
+const AGES = ['10대 이하', '10대', '20대', '30대', '40대', '50대 이상'];
+const KINDNESS = ['매우 친절', '친절', '보통', '불친절', '매우 불친절'];
+const REVISITS = ['재방문 의사 있음', '재방문 의사 없음', '잘 모르겠음'];
+const STAR_LABELS = ['', '매우 불만족', '불만족', '보통', '만족', '매우 만족'];
+
+const answers = {
+  store: '', designer: '', gender: '', age: '',
+  serviceSatisfaction: 0, cleanSatisfaction: 0,
+  kindness: '', unkindComment: '', revisit: '',
+  generalComment: '', visitorName: '', visitorPhone: ''
+};
+
+// URL 파라미터로 지점 자동 선택 (?store=ns1 또는 ?store=나성 1호점)
+let storeLocked = false;
+(function () {
+  const p = new URLSearchParams(location.search).get('store');
+  if (!p) return;
+  const name = STORES[p] || (Object.values(STORES).includes(p) ? p : null);
+  if (name) {
+    answers.store = name;
+    storeLocked = true;
+    const badge = document.getElementById('storeBadge');
+    badge.textContent = '📍 ' + name;
+    badge.style.display = 'block';
+  }
+})();
+
+// 스텝 순서 (지점이 URL로 지정되면 지점 단계 생략)
+const stepOrder = ['intro', 'store', 'designer', 'profile', 'score', 'clean', 'kindness', 'revisit', 'comment', 'contact']
+  .filter(s => !(s === 'store' && storeLocked));
+let cur = 0;
+
+function show(name) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.querySelector(`[data-step="${name}"]`).classList.add('active');
+  const i = stepOrder.indexOf(name);
+  const pct = name === 'done' || name === 'sending' ? 100 : Math.round(i / (stepOrder.length - 1) * 100);
+  document.getElementById('bar').style.width = pct + '%';
+  window.scrollTo(0, 0);
+}
+function hideErrs(sec) { sec.querySelectorAll('.err').forEach(e => e.classList.remove('show')); }
+
+function startSurvey() {
+  if (!document.getElementById('selfCheck').checked) {
+    document.getElementById('errIntro').classList.add('show'); return;
+  }
+  cur = 1; show(stepOrder[cur]);
+}
+
+function validate(name) {
+  const e = id => document.getElementById(id);
+  switch (name) {
+    case 'store':    if (!answers.store) { e('errStore').classList.add('show'); return false; } break;
+    case 'designer':
+      answers.designer = e('designer').value.trim();
+      if (!answers.designer) { e('errDesigner').classList.add('show'); return false; } break;
+    case 'profile':  if (!answers.gender || !answers.age) { e('errProfile').classList.add('show'); return false; } break;
+    case 'score':    if (!answers.serviceSatisfaction) { e('errScore').classList.add('show'); return false; } break;
+    case 'clean':    if (!answers.cleanSatisfaction) { e('errClean').classList.add('show'); return false; } break;
+    case 'kindness':
+      if (!answers.kindness) { e('errKind').classList.add('show'); return false; }
+      answers.unkindComment = /불친절/.test(answers.kindness) ? e('unkindComment').value.trim() : '';
+      break;
+    case 'revisit':  if (!answers.revisit) { e('errRevisit').classList.add('show'); return false; } break;
+    case 'comment':  answers.generalComment = e('generalComment').value.trim(); break;
+  }
+  return true;
+}
+
+function next() {
+  const name = stepOrder[cur];
+  hideErrs(document.querySelector(`[data-step="${name}"]`));
+  if (!validate(name)) return;
+  cur++; show(stepOrder[cur]);
+}
+function prev() { if (cur > 0) { cur--; show(stepOrder[cur]); } }
+
+// ── 옵션 렌더링 ──
+function renderOpts(elId, list, key, onSel) {
+  const box = document.getElementById(elId);
+  list.forEach(v => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'opt'; b.textContent = v;
+    b.onclick = () => {
+      answers[key] = v;
+      box.querySelectorAll('.opt').forEach(o => o.classList.toggle('sel', o === b));
+      if (onSel) onSel(v);
+    };
+    box.appendChild(b);
+  });
+}
+renderOpts('storeOpts', Object.values(STORES), 'store');
+renderOpts('genderOpts', GENDERS, 'gender');
+renderOpts('ageOpts', AGES, 'age');
+renderOpts('kindOpts', KINDNESS, 'kindness', v => {
+  document.getElementById('unkindBox').classList.toggle('show', /불친절/.test(v));
+});
+renderOpts('revisitOpts', REVISITS, 'revisit');
+
+// ── 별점 ──
+function renderStars(boxId, labelId, key) {
+  const box = document.getElementById(boxId), label = document.getElementById(labelId);
+  for (let i = 1; i <= 5; i++) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = '★'; b.dataset.v = i;
+    b.onclick = () => {
+      answers[key] = i;
+      box.querySelectorAll('button').forEach(s => s.classList.toggle('on', +s.dataset.v <= i));
+      label.textContent = STAR_LABELS[i] + ' (' + i + '점)';
+    };
+    box.appendChild(b);
+  }
+}
+renderStars('scoreStars', 'scoreLabel', 'serviceSatisfaction');
+renderStars('cleanStars', 'cleanLabel', 'cleanSatisfaction');
+
+// 연락처 자동 하이픈
+document.getElementById('visitorPhone').addEventListener('input', function () {
+  const d = this.value.replace(/\D/g, '').slice(0, 11);
+  this.value = d.length > 7 ? d.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3')
+             : d.length > 3 ? d.replace(/(\d{3})(\d+)/, '$1-$2') : d;
+});
+
+// ── 제출 ──
+let submitting = false;
+async function submitSurvey() {
+  const sec = document.querySelector('[data-step="contact"]');
+  hideErrs(sec);
+  answers.visitorName = document.getElementById('visitorName').value.trim();
+  answers.visitorPhone = document.getElementById('visitorPhone').value.trim();
+  if (!answers.visitorName || !answers.visitorPhone) {
+    document.getElementById('errContact').classList.add('show'); return;
+  }
+  if (submitting) return;
+  submitting = true;
+  document.getElementById('submitBtn').disabled = true;
+  show('sending');
+
+  const payload = JSON.stringify(Object.assign({}, answers, { submittedAt: new Date().toISOString() }));
+
+  try {
+    // Content-Type을 text/plain으로 보내면 preflight 없이 Apps Script가 수신 가능
+    const res = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: payload,
+      redirect: 'follow'
+    });
+    const j = await res.json().catch(() => null);
+    if (!res.ok || (j && j.ok === false)) throw new Error('server');
+    show('done');
+  } catch (err) {
+    // CORS 응답을 읽지 못하는 환경 대비: no-cors로 1회 재시도 (전송은 됨)
+    try {
+      await fetch(WEBHOOK_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: payload });
+      show('done');
+    } catch (err2) {
+      submitting = false;
+      document.getElementById('submitBtn').disabled = false;
+      show('contact');
+      document.getElementById('errSubmit').classList.add('show');
+    }
+  }
+}
+</script>
+</body>
+</html>
