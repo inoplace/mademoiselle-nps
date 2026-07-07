@@ -56,7 +56,7 @@
   .opts label { display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:10px; cursor:pointer; }
   .opts select { padding:6px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; }
   #copyBtn { width:100%; padding:14px; font-size:15px; margin-top:8px; }
-  #copyBtn.done { background:var(--good); color:#fff; }
+  #copyBtn.done, #imgBtn.done { background:var(--good) !important; color:#fff !important; }
   .muted { color:var(--sub); font-size:12px; }
   .empty { text-align:center; color:var(--sub); padding:30px 0; font-size:14px; }
   /* 로그인 */
@@ -129,7 +129,8 @@
         <label><input type="checkbox" id="optCaution" checked> 응대 지적 경고 포함</label>
         <label><input type="checkbox" id="optDelta" checked> 직전 기간 대비 (▲▼)</label>
         <button class="btn primary" id="copyBtn">📋 카톡용 텍스트 복사</button>
-        <div class="muted" style="margin-top:10px;">복사 후 카카오톡 채팅방에 붙여넣기(Ctrl+V) 하세요.</div>
+        <button class="btn gold" id="imgBtn" style="width:100%;padding:14px;font-size:15px;margin-top:8px;">🖼 응답표 이미지 (카톡용)</button>
+        <div class="muted" style="margin-top:10px;">텍스트/이미지가 복사됩니다. 카카오톡 채팅방에 붙여넣기(Ctrl+V) 하세요. 이미지 복사가 안 되는 브라우저에서는 PNG 파일로 자동 다운로드됩니다.</div>
       </div>
     </div>
   </div>
@@ -865,6 +866,99 @@ $('#copyBtn').addEventListener('click', async () => {
   btn.classList.add('done');
   setTimeout(() => { btn.textContent = '📋 카톡용 텍스트 복사'; btn.classList.remove('done'); }, 2000);
 });
+
+/* ═══════════════ 카톡용 응답표 이미지 생성 ═══════════════ */
+function wrapCanvasText(ctx, text, maxW) {
+  const out = [];
+  let line = '';
+  for (const ch of String(text ?? '')) {
+    if (ch === '\n') { out.push(line); line = ''; continue; }
+    const t = line + ch;
+    if (ctx.measureText(t).width > maxW && line) { out.push(line); line = ch; }
+    else line = t;
+  }
+  out.push(line);
+  return out;
+}
+async function makeKakaoImage() {
+  const MAX_ROWS = 60;
+  const allRecs = [...cur()].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const rows = allRecs.slice(0, MAX_ROWS);
+  const btn = $('#imgBtn');
+  if (!rows.length) { btn.textContent = '해당 기간 응답 없음'; setTimeout(() => { btn.textContent = '🖼 응답표 이미지 (카톡용)'; }, 2000); return; }
+  const COLS = [
+    { k: 'date', t: '날짜', w: 88 }, { k: 'store', t: '지점', w: 112 }, { k: 'designer', t: '디자이너', w: 92 },
+    { k: 'score', t: '만족', w: 44 }, { k: 'clean', t: '청결', w: 44 }, { k: 'label', t: '분류', w: 56 },
+    { k: 'kindness', t: '응대', w: 78 }, { k: 'revisit', t: '재방문', w: 58 }, { k: 'gender', t: '성별', w: 44 },
+    { k: 'age', t: '나이', w: 82 }, { k: 'unkindComment', t: '불편사항', w: 230 }, { k: 'comment', t: '자유 의견', w: 300 },
+  ];
+  const val = x => ({
+    date: x.date, store: x.store, designer: x.designer, score: x.score, clean: x.clean ?? '-',
+    label: NPSCore.classifyLabel(x.score, SCALE), kindness: x.kindness,
+    revisit: x.revisit === true ? '있음' : x.revisit === false ? '없음' : '모름',
+    gender: x.gender, age: x.age, unkindComment: x.unkindComment, comment: x.comment,
+  });
+  const M = 24, lineH = 17, padX = 8, padY = 7, headH = 34, titleH = 78, footH = 34;
+  const W = COLS.reduce((s, c) => s + c.w, 0) + M * 2;
+  const meas = document.createElement('canvas').getContext('2d');
+  meas.font = '12px "Malgun Gothic", sans-serif';
+  const rowData = rows.map(x => {
+    const v = val(x);
+    const cells = COLS.map(c => wrapCanvasText(meas, v[c.k], c.w - padX * 2));
+    return { cells, h: Math.max(...cells.map(l => l.length)) * lineH + padY * 2 };
+  });
+  const H = titleH + headH + rowData.reduce((s, r) => s + r.h, 0) + footH;
+  const scale = 2;
+  const cv = document.createElement('canvas');
+  cv.width = W * scale; cv.height = H * scale;
+  const ctx = cv.getContext('2d');
+  ctx.scale(scale, scale);
+  ctx.fillStyle = '#FAF7F2'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#8B1A4A'; ctx.font = 'bold 20px "Malgun Gothic", sans-serif';
+  ctx.fillText('마드모아젤 NPS 응답 상세', M, 34);
+  ctx.fillStyle = '#6B6B6B'; ctx.font = '12px "Malgun Gothic", sans-serif';
+  ctx.fillText('기간: ' + range.label + ' · 총 ' + allRecs.length + '건' + (allRecs.length > MAX_ROWS ? ' (최신 ' + MAX_ROWS + '건 표시)' : '') + ' · 생성 ' + new Date().toLocaleString('ko-KR'), M, 56);
+  let y = titleH, x = M;
+  ctx.fillStyle = '#8B1A4A'; ctx.fillRect(M, y, W - M * 2, headH);
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 12px "Malgun Gothic", sans-serif';
+  for (const c of COLS) { ctx.fillText(c.t, x + padX, y + 22); x += c.w; }
+  y += headH;
+  rowData.forEach((r, i) => {
+    ctx.fillStyle = i % 2 ? '#FDF4F7' : '#FFFFFF';
+    ctx.fillRect(M, y, W - M * 2, r.h);
+    ctx.font = '12px "Malgun Gothic", sans-serif';
+    let cx = M;
+    COLS.forEach((c, ci) => {
+      const first = r.cells[ci][0];
+      ctx.fillStyle = c.k === 'label' ? (first === '비추천' ? '#C0392B' : first === '추천' ? '#1E8449' : '#2C2C2C') : '#2C2C2C';
+      r.cells[ci].forEach((ln, li) => ctx.fillText(ln, cx + padX, y + padY + 12 + li * lineH));
+      cx += c.w;
+    });
+    ctx.strokeStyle = '#F0E6E0';
+    ctx.beginPath(); ctx.moveTo(M, y + r.h); ctx.lineTo(W - M, y + r.h); ctx.stroke();
+    y += r.h;
+  });
+  ctx.fillStyle = '#999999'; ctx.font = '11px "Malgun Gothic", sans-serif';
+  ctx.fillText('마드모아젤 NPS 대시보드에서 자동 생성', M, y + 20);
+  cv.toBlob(async blob => {
+    let copied = false;
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      copied = true;
+    } catch (e) {}
+    if (!copied) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'NPS응답표_' + (range.from || '전체') + '_' + (range.to || NPSCore.ymd(new Date())) + '.png';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }
+    btn.textContent = copied ? '✅ 복사됨! 카톡에 붙여넣기(Ctrl+V)' : '✅ PNG 다운로드됨!';
+    btn.classList.add('done');
+    setTimeout(() => { btn.textContent = '🖼 응답표 이미지 (카톡용)'; btn.classList.remove('done'); }, 3000);
+  }, 'image/png');
+}
+$('#imgBtn').addEventListener('click', makeKakaoImage);
 
 $('#logoutBtn').addEventListener('click', () => {
   sessionStorage.removeItem('nps_data_url');
